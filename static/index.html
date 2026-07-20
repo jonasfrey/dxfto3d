@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stained Glass Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Stained Glass Generator</h1>
+            <p>Upload a DXF file to create a 3D printable stained glass model</p>
+        </header>
+
+        <!-- Step 1: Upload -->
+        <section id="upload-section">
+            <h2>Step 1: Upload DXF</h2>
+            <div class="upload-area" id="drop-zone">
+                <input type="file" id="file-input" accept=".dxf" hidden>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p>Drag &amp; drop a DXF file here or <span class="link">browse</span></p>
+                <p class="hint">Supported entities: LINE, ARC, CIRCLE, POLYLINE</p>
+            </div>
+            <div id="upload-status"></div>
+        </section>
+
+        <!-- Step 2: Configure -->
+        <section id="config-section" style="display: none;">
+            <h2>Step 2: Configure</h2>
+            <div class="config-grid">
+                <div class="config-group">
+                    <h3>Frame Settings</h3>
+                    <label>
+                        <span>Frame Thickness: <strong id="frame-thickness-val">1.5</strong> mm</span>
+                        <input type="range" id="frame-thickness" min="0.5" max="3.0" step="0.1" value="1.5">
+                    </label>
+                    <label>
+                        <span>Frame Height: <strong id="frame-height-val">2.0</strong> mm</span>
+                        <input type="range" id="frame-height" min="1.0" max="5.0" step="0.1" value="2.0">
+                    </label>
+                    <label>
+                        <span>Frame Color:</span>
+                        <input type="color" id="frame-color" value="#222222">
+                    </label>
+                </div>
+                <div class="config-group">
+                    <h3>Pane Settings</h3>
+                    <label>
+                        <span>Default Pane Height: <strong id="pane-height-val">0.5</strong> mm</span>
+                        <input type="range" id="pane-height" min="0.2" max="1.0" step="0.1" value="0.5">
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3: Preview & Color -->
+        <section id="preview-section" style="display: none;">
+            <h2>Step 3: Preview &amp; Color</h2>
+            <div class="preview-container">
+                <div class="preview-panel">
+                    <h3>2D Top View</h3>
+                    <div class="paint-toolbar">
+                        <div class="paint-group">
+                            <span class="paint-label">Color</span>
+                            <span id="current-color" class="current-color" title="Active paint color"></span>
+                            <div id="color-palette" class="palette"></div>
+                            <button id="add-color" class="palette-add" type="button" title="Add current hue to palette">+</button>
+                            <input type="range" id="hue-slider" class="hue-slider" min="0" max="360" step="1" value="0" title="Hue (only hue is selectable)">
+                            <span id="hue-val" class="hue-val">0°</span>
+                        </div>
+                        <div class="paint-group">
+                            <span class="paint-label">Thickness</span>
+                            <div id="thickness-palette" class="palette"></div>
+                        </div>
+                        <button id="reset-view" class="btn-small" type="button">Reset view</button>
+                        <span class="hint">Click a pane to fill · drag to pan · scroll to zoom</span>
+                    </div>
+                    <canvas id="canvas-2d" width="600" height="400"></canvas>
+                </div>
+                <div class="preview-panel">
+                    <h3>3D Preview</h3>
+                    <div id="canvas-3d-container"></div>
+                    <p class="hint">Drag to rotate, scroll to zoom</p>
+                </div>
+            </div>
+
+            <div class="pane-list-container">
+                <h3>Panes (<span id="pane-count">0</span>)</h3>
+                <div class="pane-controls">
+                    <button id="apply-all-height" class="btn-small">Apply Default Height to All</button>
+                    <button id="randomize-colors" class="btn-small">Randomize Colors</button>
+                    <button id="reset-colors" class="btn-small">Reset Colors</button>
+                </div>
+                <div id="pane-list" class="pane-list"></div>
+            </div>
+        </section>
+
+        <!-- Step 4: Export -->
+        <section id="export-section" style="display: none;">
+            <h2>Step 4: Export</h2>
+            <div class="export-controls">
+                <label>
+                    <span>Format:</span>
+                    <select id="export-format">
+                        <option value="3mf">3MF (Multi-color, recommended)</option>
+                        <option value="stl">STL (Single color, legacy)</option>
+                    </select>
+                </label>
+                <button id="generate-btn" class="btn-primary">Generate &amp; Download</button>
+            </div>
+            <div id="generate-status"></div>
+        </section>
+
+        <footer>
+            <p>Generated 3MF files support multi-color printing with Bambu AMS / Prusa MMU.
+            Each pane and the frame appear as separate objects in your slicer.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+</body>
+</html>
